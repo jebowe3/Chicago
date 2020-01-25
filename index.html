@@ -1,80 +1,100 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset=utf-8 />
-<title>A simple map</title>
-<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-<script src='https://api.mapbox.com/mapbox.js/v3.2.1/mapbox.js'></script>
-<link href='https://api.mapbox.com/mapbox.js/v3.2.1/mapbox.css' rel='stylesheet' />
-<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<style>
-  body { margin:0; padding:0; }
-  #map { position:absolute; top:0; bottom:0; width:100%; }
-</style>
+  <meta charset=utf-8 />
+  <title>Contemporary Canopy Coverage and Historical Redlining in Chicago</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+  <script src='https://api.mapbox.com/mapbox.js/v3.2.1/mapbox.js'></script>
+  <link href='https://api.mapbox.com/mapbox.js/v3.2.1/mapbox.css' rel='stylesheet' />
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+  </style>
 </head>
+
 <body>
 
-<div id='map'></div>
-<script>
-L.mapbox.accessToken = 'pk.eyJ1IjoiamVib3dlMyIsImEiOiJjajY1M3l6bWIxeTQwMndtcXRuN3F4ejFpIn0.aE7P49pqaBKjy2HTOw-tgw';
-var map = L.mapbox.map('map')
-    .setView([41.866261,-87.61698059], 11)
-    .addLayer(L.mapbox.styleLayer('mapbox://styles/jebowe3/ck5t4ncen2hm11inxh3nvt8x0'));
+  <div id='map'></div>
 
-// add a scale bar
-L.control.scale().addTo(map);
+  <script>
+    // add mapbox canopy tiles
+    L.mapbox.accessToken = 'pk.eyJ1IjoiamVib3dlMyIsImEiOiJjajY1M3l6bWIxeTQwMndtcXRuN3F4ejFpIn0.aE7P49pqaBKjy2HTOw-tgw'; // enter access token from mapbox site
+    var map = L.mapbox.map('map') // define the map
+      .setView([41.866261, -87.61698059], 11) // center and zoom the map
+      .addLayer(L.mapbox.styleLayer('mapbox://styles/jebowe3/ck5t4ncen2hm11inxh3nvt8x0')); // access the style
 
-// load the data asynchronously
-d3.queue()
-  .defer(d3.json, 'data/newData.geojson')
-  .await(drawMap);
+    // add a scale bar
+    L.control.scale().addTo(map);
 
-function drawMap(err, holc) {
-  var holcGrade = L.geoJson( holc, {
-    style: function(feature){
-      var fillColor,
-          d = feature.properties.holc_grade;
-      if ( d == 'A' ) fillColor = "green";
-      else if ( d == 'B' ) fillColor = "blue";
-      else if ( d == 'C' ) fillColor = "yellow";
-      else if ( d == 'D' ) fillColor = "red";
-      else fillColor = "#000000";  // no data
-      return {
-              color: "black",
-              weight: 0.5,
-              opacity: 1,
-              fillColor: fillColor,
-              fillOpacity: 0.4
-            };
-    },
-    onEachFeature: function( feature, layer ){
-      layer.bindPopup( "<strong>HOLC Grade: " + feature.properties.holc_grade + "</strong><br/>" + "<strong>Average Canopy Coverage for HOLC Grade " + feature.properties.holc_grade + " : " + feature.properties.Grade_Per + "%</strong><br/>" + "<strong>Canopy Coverage in this District: " + feature.properties.Canopy_Per + "%</strong><br/>" + "<strong>HOLC Neighborhood Description: </strong><br/>" + feature.properties.area_description_data[8], {maxHeight: 300, minWidth: 350} )
-      layer.on({
-        // define what happens on mouseover
-        mouseover: function(e) {
-          var layer = e.target;
-            layer.setStyle({
-              color: 'black',
-              weight: 3,
-              opacity: 1,
-              fillOpacity: 0.75
+    // load the data asynchronously
+    d3.queue()
+      .defer(d3.json, 'data/newData.geojson') // the HOLC layer
+      .await(drawMap); // load the layers after the map loads
+
+    // provide instructions for drawing the map
+    function drawMap(err, holc) { // add layers
+      var holcGrade = L.geoJson(holc, { // define HOLC layer with a variable
+        style: function(feature) { // style the layer according to its properties
+          var fillColor,
+            d = feature.properties.holc_grade;
+          if (d == 'A') fillColor = "green";
+          else if (d == 'B') fillColor = "blue";
+          else if (d == 'C') fillColor = "yellow";
+          else if (d == 'D') fillColor = "red";
+          else fillColor = "#000000"; // no data
+          return {
+            color: "black",
+            weight: 0.5,
+            opacity: 1,
+            fillColor: fillColor,
+            fillOpacity: 0.4
+          };
+        },
+        // bind popup content to each layer feature
+        onEachFeature: function(feature, layer) {
+          layer.bindPopup("<strong>HOLC Grade: " + feature.properties.holc_grade + "</strong><br/>" + "<strong>Average Canopy Coverage for HOLC Grade " + feature.properties.holc_grade + " : " + feature.properties.Grade_Per + "%</strong><br/>" +
+            "<strong>Canopy Coverage in this District: " + feature.properties.Canopy_Per + "%</strong><br/>" + "<strong>HOLC Neighborhood Description: </strong><br/>" + feature.properties.area_description_data[8], {
+              maxHeight: 300,
+              minWidth: 350
+            })
+          layer.on({
+            // define what happens on mouseover
+            mouseover: function(e) {
+              var layer = e.target;
+              layer.setStyle({
+                color: 'black',
+                weight: 3,
+                opacity: 1,
+                fillOpacity: 0.75
+              });
+            },
+            // define what happens on mouseout
+            mouseout: function(e) {
+
+              // reset the holcGrade layer styles
+              holcGrade.resetStyle(e.target);
+
+            },
           });
-        },
-        // define what happens on mouseout
-        mouseout: function(e) {
-
-          // reset the holcGrade layer styles
-          holcGrade.resetStyle(e.target);
-
-        },
-      });
-    }
-  }).addTo(map);
-}; // end drawMap function
-
-
-</script>
+        }
+      }).addTo(map);
+    }; // end drawMap function
+  </script>
 
 </body>
+
 </html>
