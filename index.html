@@ -13,18 +13,17 @@
   <script src="https://d3js.org/d3.v4.min.js"></script>
 
   <style>
-    html, body {
+    body {
       margin: 0;
       padding: 0;
-      height: 100%`
     }
 
     /* Add banner to header background */
     header {
-      background-image: url('images/Canopy.png');
+      background-image: url('images/Canopy_1.png');
       position: fixed;
       width: 100%;
-      height: 10%;
+      height: 100px;
       background-color: #000000;
       box-shadow: 0px 5px 5px black;
       z-index: 800;
@@ -32,10 +31,10 @@
 
     h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 2vw;
+      font-size: 30px;
       display: inline-block;
       color: #202020;
-      margin-top: 0.0em;
+      margin-top: 0.4em;
       margin-bottom: 0.0em;
       margin-left: 0.5em;
       margin-right: 0;
@@ -44,19 +43,19 @@
 
     h2 {
       font-family: 'Open Sans', sans-serif;
-      font-size: 1vw;
+      font-size: 13px;
       display: inline-block;
       color: #202020;
       margin-top: 0.0em;
       margin-bottom: 0.0em;
-      margin-left: 1.15em;
+      margin-left: 1.25em;
       margin-right: 0;
       font-weight: normal;
     }
 
     #map {
       position: absolute;
-      top: 10%;
+      top: 100px;
       bottom: 0;
       width: 100%;
     }
@@ -67,7 +66,7 @@
 
   <header>
     <h1>Contemporary Canopy Coverage and Historical Redlining in Chicago</h1><br>
-    <h2>Map by Graham Pickren & <a href = 'https://jebowe3.github.io/Map-Portfolio/' style='color:blue;'>Jay Bowen</a>, 2020</h2>
+    <h2>Map by <a href = 'https://www.roosevelt.edu/Academics/Faculty/Profile?ID=gpickren' style='color:blue;'>Graham Pickren</a> & <a href = 'https://jebowe3.github.io/Map-Portfolio/' style='color:blue;'>Jay Bowen</a>, 2020</h2>
   </header>
 
   <div id='map'></div>
@@ -76,7 +75,7 @@
     // add mapbox canopy tiles
     L.mapbox.accessToken = 'pk.eyJ1IjoiamVib3dlMyIsImEiOiJjajY1M3l6bWIxeTQwMndtcXRuN3F4ejFpIn0.aE7P49pqaBKjy2HTOw-tgw'; // enter access token from mapbox site
     var map = L.mapbox.map('map') // define the map
-      .setView([41.866261, -87.61698059], 11) // center and zoom the map
+      .setView([41.866261, -87.71698059], 11) // center and zoom the map
       .addLayer(L.mapbox.styleLayer('mapbox://styles/jebowe3/ck5t4ncen2hm11inxh3nvt8x0')); // access the style
 
     // add a scale bar
