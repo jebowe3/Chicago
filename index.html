@@ -6,11 +6,9 @@
   <title>Contemporary Canopy Coverage and Historical Redlining in Chicago</title>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
 
-  <script src='https://api.mapbox.com/mapbox.js/v3.2.1/mapbox.js'></script>
+  <link href='https://api.mapbox.com/mapbox-assembly/v0.8.0/assembly.min.css' rel='stylesheet'>
   <link href='https://api.mapbox.com/mapbox.js/v3.2.1/mapbox.css' rel='stylesheet' />
   <link href="https://fonts.googleapis.com/css?family=Open+Sans|Playfair+Display:800&display=swap" rel="stylesheet">
-  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script src="https://d3js.org/d3.v4.min.js"></script>
 
   <style>
     body {
@@ -59,6 +57,21 @@
       bottom: 0;
       width: 100%;
     }
+
+    #canopyInfo {
+      position: fixed;
+      top: 110px;
+      right: 10px;
+    }
+
+    .col3 {
+      margin-top: 0.5em;
+    }
+
+    .col6 {
+      margin-left: 0.5em;
+    }
+
   </style>
 </head>
 
@@ -70,6 +83,33 @@
   </header>
 
   <div id='map'></div>
+
+  <!-- Canopy information window -->
+  <div id='canopyInfo' class='py6 px12 bg-gray-faint border border--gray-light round absolute wmax200 none'>
+    <h3 class='txt-bold'><span></span></h3>
+    <div class='grid'>
+      <nav class='col3'>
+        <p class='District'> <svg class='icon inline-block' style='color: gray'><use xlink:href='#icon-circle'/></svg> <span class='txt-s txt-bold'></span> </p>
+        <p class='Cook'> <svg class='icon inline-block' style='color: black'><use xlink:href='#icon-circle'/></svg> <span class='txt-s txt-bold'></span> </p>
+        <p class='ClassA'> <svg class='icon inline-block' style='color: green'><use xlink:href='#icon-circle'/></svg> <span class='txt-s txt-bold'></span> </p>
+        <p class='ClassB'> <svg class='icon inline-block' style='color: blue'><use xlink:href='#icon-circle'/></svg> <span class='txt-s txt-bold'></span> </p>
+        <p class='ClassC'> <svg class='icon inline-block' style='color: yellow'><use xlink:href='#icon-circle'/></svg> <span class='txt-s txt-bold'></span> </p>
+        <p class='ClassD'> <svg class='icon inline-block' style='color: red'><use xlink:href='#icon-circle'/></svg> <span class='txt-s txt-bold'></span> </p>
+      </nav>
+      <div class='col6 flex-parent flex-parent--center-cross'>
+        <p class='mb6 flex-child'><span class='canopySpark'></span></p>
+      </div>
+    </div>
+    <!-- end grid -->
+  </div>
+  <!-- end canopyInfo -->
+
+  <!-- load scripts -->
+  <script src='https://api.mapbox.com/mapbox.js/v3.2.1/mapbox.js'></script>
+  <script src='https://api.mapbox.com/mapbox-assembly/v0.8.0/assembly.js'></script>
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
 
   <script>
     // add mapbox canopy tiles
@@ -88,6 +128,9 @@
 
     // provide instructions for drawing the map
     function drawMap(err, holc) { // add layers
+
+      var canopyInfo = $('#canopyInfo'); // select the canopyInfo element and reference with variable
+
       var holcGrade = L.geoJson(holc, { // define HOLC layer with a variable
         style: function(feature) { // style the layer according to its properties
           var fillColor,
@@ -105,14 +148,17 @@
             fillOpacity: 0.4
           };
         },
+
         // bind popup content to each layer feature
         onEachFeature: function(feature, layer) {
-          layer.bindPopup("<strong>HOLC Grade: " + feature.properties.holc_grade + "</strong><br/>" + "<strong>Average Canopy Coverage for HOLC Grade " + feature.properties.holc_grade + " : " + feature.properties.Grade_Per + "%</strong><br/>" +
-            "<strong>Canopy Coverage in this District: " + feature.properties.Canopy_Per + "%</strong><br/>" + "<strong>HOLC Neighborhood Description: </strong><br/>" + feature.properties.area_description_data[8], {
+
+          layer.bindPopup("<strong>HOLC Grade: " + feature.properties.holc_grade + "</strong><br/>" + "<strong>HOLC Neighborhood Description (1940): </strong><br/>" + feature.properties.area_description_data[8], {
               maxHeight: 300,
               minWidth: 350
             })
+
           layer.on({
+
             // define what happens on mouseover
             mouseover: function(e) {
               var layer = e.target;
@@ -123,11 +169,58 @@
                 fillOpacity: 0.75
               });
             },
+
+            // define what happens on click
+            click: function(e) {
+
+              // remove the none class to display the element
+              canopyInfo.removeClass('none').show();
+
+              // derive the properties of the target layer
+              var props = layer.feature.properties;
+
+              // create an empty array
+              var canopyVals = [];
+
+              // push feature property values to the empty array
+              canopyVals.push(
+                props['Canopy_Per'],
+                0,
+                50,
+                35,
+                24,
+                //Number((Number(props.Percent_Other) + Number(props.Percent_Pacific_Islander)).toFixed(2)),
+                19
+              );
+              console.log(canopyVals);
+
+              // populate our info window HTML elements with the relevant information using jQuery
+              $('#canopyInfo span').html('Canopy Coverage (2010)'); // the name of the county subdivision the user is clicking on, along with the year of the data
+              $(".District span").html('This District: ' + props.Canopy_Per + '%'); // the total population
+              $(".Cook span").html('Cook County: 0%'); // the percentage of residents in each demographic category
+              $(".ClassA span").html('Class A: 50%');
+              $(".ClassB span").html('Class B: 35%');
+              $(".ClassC span").html('Class C: 24%');
+              $(".ClassD span").html('Class D: 19%');
+
+              // add a bar chart of canopy coverage
+              $('.canopySpark').sparkline(canopyVals, {
+                type: 'bar',
+                height: '10.0em',
+                barWidth: '12.0em',
+                colorMap: ['gray', 'black', 'green', 'blue', 'yellow', 'red'],
+              });
+
+            },
+
             // define what happens on mouseout
             mouseout: function(e) {
 
               // reset the holcGrade layer styles
               holcGrade.resetStyle(e.target);
+
+              // hide the canopy info window
+              canopyInfo.hide();
 
             },
           });
